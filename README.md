@@ -41,7 +41,7 @@ The objective of this lab is to develop hands-on blue team, detection engineerin
 ┌───────▼────────┐        ┌──────────▼──────────┐       ┌────────▼────────┐
 │ Ubuntu Server  │        │     Kali Linux      │       │  Windows 10 VM  │
 │ Wazuh SIEM     │        │   Attacker Machine  │       │   Target System │
-│ Manager         │        │ Nmap / Hydra        │       │ Wazuh Agent     │
+│ Manager        │        │ Nmap / Hydra        │       │ Wazuh Agent     │
 │ 192.168.56.20  │        │ 192.168.56.10       │       │ 192.168.56.30   │
 └────────────────┘        └─────────────────────┘       └─────────────────┘
 

@@ -51,7 +51,7 @@ This repository documents the full build: architecture decisions, configuration,
 
 ## Architecture
 
-![Network Diagram](./diagrams/homelab_publish_diagram.svg)
+![Network Diagram](./images/homelab_publish_diagram.svg)
 
 | Component | Role |
 |---|---|

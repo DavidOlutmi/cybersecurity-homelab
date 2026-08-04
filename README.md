@@ -33,7 +33,7 @@ This repository documents the full build: architecture decisions, configuration,
 | Wazuh Host | SIEM; manager, indexer, dashboard | Ubuntu Server | ~4–6GB |
 | Kali | Attacker machine | Kali Linux | ~2GB |
 
-*Allocations are sized to fit within host RAM alongside the other VMs — see [`docs/SETUP.md`](./docs/SETUP.md) for the reasoning behind each.*
+*Allocations are sized to fit within host RAM alongside the other VMs. See [`docs/SETUP.md`](./docs/SETUP.md) for the reasoning behind each.*
 
 ## Features
 

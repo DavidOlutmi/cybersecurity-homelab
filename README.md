@@ -30,7 +30,7 @@ This repository documents the full build: architecture decisions, configuration,
 | pfSense | Firewall, NAT, routing, VLAN segmentation | pfSense (FreeBSD) | ~1GB |
 | Domain Controller | AD DS, DNS, DHCP | Windows Server 2019 | ~4GB |
 | Client1 | Domain-joined endpoint | Windows 10 | ~4GB |
-| Wazuh Host | SIEM — manager, indexer, dashboard | Ubuntu Server | ~4–6GB |
+| Wazuh Host | SIEM; manager, indexer, dashboard | Ubuntu Server | ~4–6GB |
 | Kali | Attacker machine | Kali Linux | ~2GB |
 
 *Allocations are sized to fit within host RAM alongside the other VMs — see [`docs/SETUP.md`](./docs/SETUP.md) for the reasoning behind each.*
@@ -55,11 +55,11 @@ This repository documents the full build: architecture decisions, configuration,
 
 | Component | Role |
 |---|---|
-| **pfSense** | Network edge — firewall, NAT, routing, VLAN segmentation |
-| **Windows Server 2019 (DC)** | Active Directory Domain Services, DNS, DHCP — `mydomain.com` |
+| **pfSense** | Network edge; firewall, NAT, routing, VLAN segmentation |
+| **Windows Server 2019 (DC)** | Active Directory Domain Services, DNS, DHCP; `mydomain.com` |
 | **Windows 10 Client** | Domain-joined endpoint |
-| **Kali Linux** | Attacker machine — Impacket, hashcat, Kerberoasting tooling |
-| **Ubuntu Server (Wazuh)** | SIEM — manager, indexer, dashboard; ingests logs from every host |
+| **Kali Linux** | Attacker machine; Impacket, hashcat, Kerberoasting tooling |
+| **Ubuntu Server (Wazuh)** | SIEM; manager, indexer, dashboard; ingests logs from every host |
 
 **Design decision:** pfSense handles routing and NAT here, not the DC, closer to how a real network would actually be laid out, with the firewall as its own dedicated box instead of something bolted onto the domain controller. See [`docs/SETUP.md`](./docs/SETUP.md) for the full deviation from the reference tutorial this was adapted from.
 
@@ -69,7 +69,7 @@ This repository documents the full build: architecture decisions, configuration,
 |---|---|
 | pfSense | Firewall, NAT, network segmentation |
 | Windows Server 2019 | Active Directory Domain Services, DNS, DHCP |
-| Wazuh | SIEM — log aggregation, correlation, alerting |
+| Wazuh | SIEM; log aggregation, correlation, alerting |
 | PowerShell | Bulk AD provisioning, automation scripting |
 | Kali Linux / Impacket | Attack simulation (Kerberoasting, enumeration) |
 | Hashcat | Offline credential cracking |

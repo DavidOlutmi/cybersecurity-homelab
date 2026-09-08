@@ -34,7 +34,6 @@ Ran a KQL query against the workspace and confirmed real DC events were present 
 <tr>
 <td>
 This mirrors what I found in Wazuh during the original Kerberoasting investigation. In both platforms, the underlying telemetry (Event ID 4769 for the targeted service accounts) is present and correctly logged, but no default analytic or detection rule maps this specific pattern to <strong>T1558.003 (Steal or Forge Kerberos Tickets: Kerberoasting)</strong>. Sentinel's MITRE ATT&CK page only surfaces techniques tied to a fired analytic rule or incident, not raw matching log events. No such rule ships by default for this technique, which is why the traffic shows up under Brute Force and similar adjacent categories instead of being named directly.
-![Query Diagram](/images/Azure_DC_4769_Telemetry.png)
 
 <br><br>
 The same root cause, missing detection content rather than missing telemetry, shows up independently in two different SIEM platforms built by two different companies, which suggests this is a genuine, general gap in default detection coverage for Kerberoasting, not a quirk of either tool specifically.

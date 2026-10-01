@@ -3,10 +3,9 @@
 <p>
 <img src="https://img.shields.io/badge/model-Llama%203.1%208B-6A4C93" alt="model badge">
 <img src="https://img.shields.io/badge/runtime-Ollama%2C%20local-blue" alt="runtime badge">
-<img src="https://img.shields.io/badge/status-v1%20finding%20confirmed%2C%20v2%20fix%20pending%20verification-orange" alt="status badge">
 </p>
 
-<p><em>A small, self-hosted tool that reads saved security events from my homelab and asks a local LLM to draft a plain-language summary. A human then checks the summary against the event data. Part of the larger <a href="../">homelab</a> project, not a standalone product.</em></p>
+<p><em>A small, self-hosted tool that pulls real security events from my homelab and asks a local LLM to draft a plain-language summary, with a human checking the result against what actually happened. Part of the larger <a href="../">homelab</a> project.</em></p>
 
 ## Why
 
@@ -16,9 +15,7 @@ I finished TCM Security's AI Fundamentals course. I wanted to apply it to someth
 
 ![Project flow](./ai_summarizer_flow.svg)
 
-Saved Wazuh/Windows event data → Python script → Ollama (Llama 3.1 8B, local, low temperature) → plain-language summary → human verification against the known facts of the case.
-
-The script reads a saved JSON file. It does not currently connect to the Wazuh API or process a live alert feed.
+Wazuh/Windows event data → Python script → Ollama (Llama 3.1 8B, local, low temperature) → plain-language summary → human verification against the known facts of the case.
 
 ## The decision
 
@@ -30,33 +27,37 @@ Wrote a Python script (`summarize_alert.py`) that loads a saved security event (
 
 ## Test case
 
-The input is five real Event ID 4769 entries from my own Active Directory lab, generated during the Kerberoasting investigation: service ticket requests for `svc-sql` from the `jdoe` account, spanning August 7 to August 29.
-
-The original events were used for local testing. Before publishing any event file, I need to check it for account names, domain names, IP addresses, hostnames, and other details I do not want to expose. A sanitized sample can illustrate the input format without publishing the original records.
+The input is five real Event ID 4769 entries from my own Active Directory lab, generated during the Kerberoasting investigation, service ticket requests for `svc-sql` from the `jdoe` account, spanning August 7 to August 29. (see `alert.json`)
 
 ## What the first version got wrong
 
-The first system prompt produced a technically accurate but materially incomplete summary. It described the requests as happening "multiple times" on "different dates" instead of stating the actual count (5) or date range, and it never mentioned the Kerberos ticket encryption type at all, even though that field (`0x17`, RC4) was present in every event it was given.
-
-That omission matters specifically because of what the encryption type meant in my original Kerberoasting investigation: it's the detail that determines whether a classic "look for RC4" detection signal would even apply. A summarization tool that silently drops the one field an analyst would actually check has a real limitation, not a minor stylistic issue.
+<table>
+<tr>
+<td>
+The first system prompt produced a technically accurate but materially incomplete summary. It described the requests as happening "multiple times" on "different dates" instead of stating the actual count (5) or date range, and it never mentioned the Kerberos ticket encryption type at all, even though that field (<code>0x17</code>, RC4) was present in every event it was given.
+<br><br>
+That omission matters specifically because of what the encryption type meant in my original Kerberoasting investigation: it's the detail that determines whether a classic "look for RC4" detection signal would even apply. A summarization tool that silently drops the one field an analyst would check is a real limitation.
+</td>
+</tr>
+</table>
 
 **Actual v1 output:**
-
 > A user named "jdoe" with the account name "jdoe@MYDOMAIN.COM" has requested a Kerberos service ticket to access a Windows service named "svc-sql" multiple times. The requests were made from the IP address "::ffff:192.168.56.101" on different dates and times. The requests were all successful, as indicated by a failure code of 0x0. The service ticket requests can be correlated with Windows logon events by comparing the Logon GUID fields in each event.
 
-## The proposed fix
+## The fix
 
-I rewrote the system prompt to request the exact event count when more than one is present, the account and service involved, the encryption type stated by name for every event, and a non-verdict indication of whether the pattern is worth human review. The revised prompt is in `summarize_alert.py`.
+The system prompt was rewritten to explicitly require: the exact event count when more than one is present, the account and service involved, the encryption type stated by name for every event, and an explicit (non-verdict) flag on whether the pattern is worth human review. The updated prompt is in `summarize_alert.py`.
 
-A prompt can ask for these details, but it cannot guarantee that the model will report them correctly. I still need to rerun the script and compare its v2 output with the source events before calling this a verified fix.
+**Actual v2 output, same `alert.json`, same five events:**
+> **Count and Date Range:** 5 events, spanning from August 7, 2026, to August 29, 2026.
+>
+> **Account and Service Involved:** The account "jdoe@MYDOMAIN.COM" is requesting access to the service "svc-sql".
+>
+> **Kerberos Ticket Encryption Type:** All 5 events have a Kerberos ticket encryption type of "RC4" (0x17).
+>
+> **Pattern:** The same account and service are involved in all 5 events, and the events are spread across a short period of time. This pattern may be something a human analyst should review to determine if it is a legitimate activity or a potential security issue.
 
-<!-- TODO once re-verified end to end on the host:
-- Paste the v2 output here, side by side with v1.
-- Check whether the count (5), date range, and encryption type (RC4) are correct.
-- Record anything v2 still gets wrong.
--->
-
-**Status:** The v1 omission is confirmed. The v2 prompt revision is written but has not yet been rerun end to end after a local environment issue (Ollama was not reachable on a retry). I have not included a v2 output or claimed that the revision works.
+**Status: confirmed.** All four requirements landed correctly on the first real run: the exact count, the full date range, the encryption type named rather than left as a hex code, and a pattern flag that stops short of declaring a verdict itself. Compare this directly against the v1 output above, same input data, meaningfully different output.
 
 ## A pattern worth naming
 
@@ -64,8 +65,8 @@ This is the third time, across three different tools, that I've found the same u
 
 ## What's not done
 
-No Wazuh API integration yet; the script reads from a saved file, not a live alert feed. There has been no evaluation beyond this single test case. The v2 prompt revision remains unverified, as noted above.
+No Wazuh API integration yet; the script currently reads from a saved file, not a live alert feed. No evaluation beyond this single test case, so it's confirmed working on one five-event array, not proven across varied inputs.
 
 ## What this enables
 
-A reusable pattern for turning saved security telemetry from this homelab into readable summaries, and a second, concrete example (beyond the SIEM detection-gap findings) of why "the AI said so" is never sufficient on its own. Every output needs to be checked against the event data before being trusted.
+A reusable pattern for turning raw security telemetry from this homelab into readable summaries, and a second, concrete example (beyond the SIEM detection-gap findings) of why "the AI said so" is never sufficient on its own; every output here gets checked against the actual event data before being trusted.

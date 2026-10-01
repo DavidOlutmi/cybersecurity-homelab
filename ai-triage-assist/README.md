@@ -5,7 +5,7 @@
 <img src="https://img.shields.io/badge/runtime-Ollama%2C%20local-blue" alt="runtime badge">
 </p>
 
-<p><em>A small, self-hosted tool that pulls real security events from my homelab and asks a local LLM to draft a plain-language summary, with a human checking the result against what actually happened. Part of the larger <a href="../">homelab</a> project.</em></p>
+<p><em>A small, self-hosted tool that pulls real security events from my homelab and asks a local LLM to draft a plain-language summary, with a human checking the result against what actually happened. Part of the larger <a href="../">cybersecurity-homelab</a> project.</em></p>
 
 ## Why
 

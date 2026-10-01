@@ -44,6 +44,7 @@ This repository documents the full build: architecture decisions, configuration,
 - [x] Domain-joined Windows 10 client
 - [x] Wazuh SIEM ingesting logs across the environment, agent active on the DC
 - [x] Kerberos Service Ticket auditing enabled; the DC is actually logging what the attack will produce
+- [x] Self-hosted LLM log summarizer for triage assistance 
 - [ ] Sysmon instrumentation (DC + client)
 - [ ] Kerberoasting attack simulation, executed and investigated
 - [ ] Detection tuning and a formal incident report
@@ -94,7 +95,7 @@ Full step-by-step replication instructions including every deviation from the re
 - [ ] Run and investigate the Kerberoasting attack against the seeded service accounts
 - [ ] Write Sigma detection rules for the attack, with tuning notes
 - [ ] Deploy Sysmon on the DC and client for richer telemetry
-- [ ] Purple team exercise — Atomic Red Team vs. current detection coverage
+- [ ] Purple team exercise; Atomic Red Team vs. current detection coverage
 - [ ] Extend log forwarding to Microsoft Sentinel for the AD environment specifically
 - [ ] Publish a full incident report for the Kerberoasting investigation
 
@@ -106,8 +107,8 @@ Real problems encountered and resolved during the build are kept here because th
 |---|---|---|
 | Ubuntu static IP reverting on reboot | NetPlan and NetworkManager both active, NetworkManager overriding config | Deactivated NetworkManager, standardized on NetPlan, full reset |
 | Windows Server VM freezing at loading screen during install | 64-bit guest requires PAE/NX, which was disabled; VirtualBox's default Hyper-V-style paravirtualization interface was incompatible with a very new AMD CPU generation | Enabled PAE/NX (Processor tab) and switched Paravirtualization Interface from Default to KVM (Acceleration tab) |
-| PowerShell bulk-user script — interactive "Supply values for Name" prompt on every user | Backtick line-continuation broke silently due to invisible trailing whitespace, fragmenting the `New-ADUser` command | Replaced backtick continuation with parameter splatting (`$params = @{...}; New-ADUser @params`) — eliminates this entire bug class |
-| PowerShell script — "SearchBase" type conversion error | `([ADSI]"").distinguishedName` returns a non-string ADSI object type; direct parameter binding rejected it while string interpolation elsewhere silently worked | Explicitly cast with `.ToString()` at the point of assignment |
+| PowerShell bulk-user script; interactive "Supply values for Name" prompt on every user | Backtick line-continuation broke silently due to invisible trailing whitespace, fragmenting the `New-ADUser` command | Replaced backtick continuation with parameter splatting (`$params = @{...}; New-ADUser @params`) — eliminates this entire bug class |
+| PowerShell script; "SearchBase" type conversion error | `([ADSI]"").distinguishedName` returns a non-string ADSI object type; direct parameter binding rejected it while string interpolation elsewhere silently worked | Explicitly cast with `.ToString()` at the point of assignment |
 | Subnet collision + dual-NIC misconfiguration | Followed the reference tutorial's addressing literally, which placed the DC on a network disconnected from the pfSense LAN this build had already established | Disabled the disconnected NIC, re-addressed the remaining one inside the real LAN, rebuilt the DHCP scope entirely |
 | Client domain sign-in failure ("domain isn't available") | DHCP wasn't handing out the DC as DNS server on the client's active lease, plus a stale DNS/AD record from an earlier, deleted client | Forced a clean DHCP lease, deleted the stale DNS record and AD computer object, rejoined cleanly |
 
